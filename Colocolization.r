@@ -186,7 +186,7 @@ for (qry.file in qry.files) {
             top.snp <- filter.regions(sig.query, window=window, p.col=col.q[4], chr.col=col.q[3], ps.col=col.q[2])
         }
 
-        loci        <- get.loci(top.snp, query=query, window=250000, p.col=col.q[4], chr.col=col.q[3], ps.col=col.q[2])
+        loci        <- get.loci(top.snp, query=query, window=window, p.col=col.q[4], chr.col=col.q[3], ps.col=col.q[2])
         names(loci) <- top.snp
         # TODO: Perhaps do this using a mclapply for parrallelization
         for (ref.file in ref.files) {
