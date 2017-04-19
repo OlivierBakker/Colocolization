@@ -211,9 +211,8 @@ for (qry.file in qry.files) {
                 n.r       <- as.numeric(ref.info[ref.name, 2:3])
                 type.r    <- "cc"
                 # If not quant or cc skip the file 
-                if (is.na(n.r)) {
-                    cat("[WARN]\tNo sample size found for file:",
-                        tail(strsplit(ref.file, "/")[[1]], n=1),
+                if (sum(is.na(n.r)) > 0) {
+                    cat("[WARN]\tNo sample size found for file:", ref.name,
                         "\n\tSkipping to next file\n")
                     next
                 }
