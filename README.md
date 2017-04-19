@@ -8,7 +8,7 @@ Contains 2 scripts:
 
 
 ### Usage Colocolization
-    Usage: /groups/umcg-wijmenga/tmp03/users/umcg-obbakker/projects/multiple_cQTL_mapping/colocolization/Colocolization.r [options]
+    Usage: Colocolization.r [options]
     
     Script for running a approximate bayes coloc analysis using multiple input QTLs and compare them to multiple traits. Auto selects loci to compare to traits based on threshold and window size. Returns an .RData file containing the summary's of the coloc.abf function. Selection of quantative or case control is based upon the file given in the option -s. If case & control are NA a quantative analysis is used and vice versa.
     
