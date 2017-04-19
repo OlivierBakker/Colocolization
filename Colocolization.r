@@ -25,7 +25,7 @@ option_list = list(
                 help="Collumn names of: <snp id>,<pvalue> in reference\n\t\t[default=%default]"),
     make_option(c("-f", "--fread"), action="store_true", default=FALSE,
                 help="Use fread instead of read table to read the reference files.\n\t\t[default=%default]")
-
+    
 )
 
 opt_parser    <- OptionParser(option_list=option_list, description="\nScript for running a approximate bayes coloc analysis using multiple input QTLs and compare them to multiple traits. Auto selects loci to compare to traits based on threshold and window size. Returns an .RData file containing the summary's of the coloc.abf function. Selection of quantative or case control is based upon the file given in the option -s. If case & control are NA a quantative analysis is used and vice versa.")
@@ -57,7 +57,7 @@ tryCatch({
     # These are fixed for the 500FG cytokine QTL mapping for now
     type.q        <- "quant"
     n.q           <- opt$samplesizesqry
-
+    
 }, warning=function(w){
     cat(paste0("\n[WARN]\t", w, "\n"))
     #print_help(opt_parser)
@@ -81,7 +81,7 @@ in.region <- function(y, x, window) {
 
 # Select the top snp for a given region (region is defined by the window size)
 filter.regions <- function(data, window=250000, chr.col="chr", ps.col="ps", p.col="p_wald", return.type="names") {
-
+    
     # Split so each chromosome is evaluated individually
     loci <- lapply(unique(data[,chr.col]), function(chr, data, window, return.type){
         snps <- data[data[,chr.col] == chr,]
@@ -94,21 +94,21 @@ filter.regions <- function(data, window=250000, chr.col="chr", ps.col="ps", p.co
                break
             }
         }
-        # After all id's have been assigned only select the most
+        # After all id's have been assigned only select the most 
         # significant snp for that locus
         unique.snps <- sapply(unique(snps$loci), function(locus, snps){
             c(rownames(snps[snps$loci == locus,])[snps[snps$loci == locus, p.col] == min(snps[snps$loci == locus, p.col])])[1]
         }, snps=snps)
         # Remove now redundant loci collumn
         snps$loci <- NULL
-
+        
         if (return.type == "names") {
             return(unique.snps)
         } else if (return.type == "df") {
             return(snps[unique.snps,])
         }
     }, data=data, window=window, return.type=return.type)
-
+    
     # Merge the list of dataframes
     if (return.type == "names") {
         return(unlist(loci))
@@ -142,14 +142,14 @@ coloc.wrapper <- function(query, reference, maf, n.q, n.r, type.q="quant", type.
             ratio.q <- n.q[1] / sum(n.q)
             ds1 <- list(pvalues=query, N=sum(n.q), s=ratio.q, type=type.q)
         }
-
+        
         if (type.r =="quant") {
             ds2 <- list(pvalues=reference, N=n.r, type=type.r)
         } else if (type.r == "cc") {
             ratio.r <- n.r[1] / sum(n.r)
             ds2 <- list(pvalues=reference, N=sum(n.r), s=ratio.r , type=type.r)
         }
-
+        
         sink("/dev/null")
         res <- coloc.abf(ds1, ds2, MAF=maf)
         sink()
@@ -205,15 +205,14 @@ for (qry.file in qry.files) {
             if (is.na(n.r)) {
                 n.r       <- as.numeric(ref.info[ref.name, 2:3])
                 type.r    <- "cc"
-                # If not quant or cc skip the file
-                if (is.na(n.r)) {
-                    cat("[WARN]\tNo sample size found for file:",
-                        tail(strsplit(ref.file, "/")[[1]], n=1),
+                # If not quant or cc skip the file 
+                if (sum(is.na(n.r)) > 0) {
+                    cat("[WARN]\tNo sample size found for file:", ref.name,
                         "\n\tSkipping to next file\n")
                     next
                 }
             }
-
+            
             for (locus in top.snp) {
                 name     <- locus
                 lc <- intersect(intersect(loci[[locus]], rownames(ref)), rownames(maf))
@@ -226,14 +225,14 @@ for (qry.file in qry.files) {
                                                                            type.q=type.q,
                                                                            type.r=type.r)[["summary"]]
                } else {
-                  cat("[WARN] No overlapping snps for query: ", query.name, " and reference: ", ref.name, "\n")
+                  cat("[WARN] No overlapping snps for query: ", query.name, " and reference: ", ref.name, "\n") 
                    t        <- as.numeric(rep(NA, 6))
                    names(t) <- c("nsnps", "PP.H0.abf","PP.H1.abf","PP.H2.abf","PP.H3.abf","PP.H4.abf")
                   results[[query.name]][[name]][[ref.name]] <- t
                }
             }
         }
-
+        
     } else if (nrow(sig.query) == 0) {
         cat("[WARN]\tNo significant hits in file: ", qry.file, "\n\tfor threshold: ", threshold, "\n\tSkipping to next file\n")
         next

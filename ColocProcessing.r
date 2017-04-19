@@ -89,10 +89,10 @@ for (mcQTL in names(results)) {
                 cat("[WARN]\tTop SNP not present in file. File might be incomplete.", mcQTL)
                 next
             }
-            if (class(results[[mcQTL]][[locus.top]]) == "list") {
-                cat("[WARN]\tNo results found for summary file. Probable reason: no overlapping snps. Skipping file")
-                next
-            }
+            # if (class(results[[mcQTL]][[locus.top]]) == "list") {
+            #     cat("[WARN]\tNo results found for summary file. Probable reason: no overlapping snps. Skipping file")
+            #    next
+            #}
             assoc         <- t(data.frame(results[[mcQTL]][[locus.top]]))
             if (sum(dim(assoc)) == 0) {
                 cat("[WARN]\tSkipping, result is empty\n")
