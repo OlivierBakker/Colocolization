@@ -1,4 +1,6 @@
 ## ------------------------------------------------------------------------
+#TODO: Add support for fread and zipped textfiles
+#TODO: Figure out the bug where there is an association but no intersection between SNPs
 library(data.table)
 library(optparse)
 
@@ -36,6 +38,7 @@ tryCatch({
     
     qry.pathfile     <- opt$query
     qry.files        <- read.table(qry.pathfile, stringsAsFactors=F, header=F, sep=";")[,1]
+    # TODO: make use of basename
     names(qry.files) <- sapply(qry.files, function(a){tail(strsplit(a, "/")[[1]], n=1)})
 
     ref.pathfile     <- opt$reference
@@ -66,7 +69,7 @@ library(coloc)
 # Get the SNPs surrounding a significant loci for a given dataset
 get.loci <- function(top.snp, query, window=250000, chr.col="chr", ps.col="ps", p.col="p_wald"){
     # Select all the SNPs within a certain window of the top SNPs
-    loci <- lapply(top.snp, function(snp, snps, window, chr.col="chr", ps.col="ps", p.col="p_wald"){
+    loci <- lapply(top.snp, function(snp, snps, window, chr.col, ps.col, p.col){
         chr <- snps[snp, chr.col]
         pos <- snps[snp, ps.col]
         loci <- rownames(snps[snps[,chr.col] == chr,][snps[snps[,chr.col] == chr ,ps.col] > pos - window &
@@ -127,9 +130,13 @@ for (mcQTL in names(results)) {
                     if (!is.na(ref.files[ref.file])) {
                         ref           <- fread(ref.files[ref.file], data.table=F, showProgress=F)
                         ref           <- ref[!duplicated(ref[,col.r[1]]), ]
-                        rownames(ref) <- ref[,"rs"]
+                        rownames(ref) <- ref[,col.r[1]]
                         i             <- intersect(rownames(ref), locus)
-                        if (i.ref == length(refs)) {
+                        
+                        if (length(i) == 0){
+                          cat("[WARN]\tSkipping because no overlap between RS numbers\n")
+                          next
+                        } else if (i.ref == length(refs)) {
                             par(mar=c(4.5,4,0,2))
                             plot(-log10(ref[i, col.r[2]]) ~ qry[i, col.q[2]],
                                  pch=20,

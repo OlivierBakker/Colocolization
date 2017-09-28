@@ -1,5 +1,6 @@
 ### Setting up & loading data
 ```{r}
+ls
 library(data.table)
 library(optparse)
 
