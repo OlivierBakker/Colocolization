@@ -6,6 +6,7 @@ Contains 2 scripts:
 - Colocolization.r: Used for running the actual colocolization analysis.
 - ColocProcessing.r: Used for plotting the results at a certain threshold.
 
+The script RunColoc.sh can be used to execute both in sequence locally or submit it to a SLURM cluster. Just fill in the parameters and run.
 
 ### Usage Colocolization
     Usage: Colocolization.r [options]
