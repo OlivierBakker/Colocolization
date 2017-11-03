@@ -81,7 +81,7 @@ get.loci <- function(top.snp, query, window=250000, chr.col="chr", ps.col="ps", 
         pos <- snps[snp, ps.col]
         loci <- rownames(snps[snps[,chr.col] == chr,][snps[snps[,chr.col] == chr ,ps.col] > pos - window &
                                                       snps[snps[,chr.col] == chr ,ps.col] < pos + window,])
-    }, snps=query, window=window)
+    }, snps=query, window=window, chr.col=chr.col, ps.col=ps.col, p.col=p.col)
     return(loci)
 }
 
@@ -95,14 +95,10 @@ for (mcQTL in names(results)) {
         
         for (locus.top in names(results[[mcQTL]])) {
             
-            cat("[DEBUG]\tDetermining loci with coloc for:", mcQTL,"\n")
-            cat("[DEBUG]\tTop SNP:", locus.top,"\n")
-            cat("[DEBUG]\tQuery colnames:", colnames(qry),"\n")
-            cat("\n------------------------------------------")
-            head(qry)
-            cat("\n------------------------------------------")
-            locus         <- unlist(get.loci(locus.top, qry, window=window, chr.col=col.q[3], ps.col=col.q[2], p.col=col.q[4]))
-            cat("[DEBUG]\tNumber of SNPs in locus:", length(locus),"\n")
+            cat("[INFO]\tDetermining loci with coloc for:", mcQTL,"\n")
+            cat("[INFO]\tTop SNP:", locus.top,"\n")
+            locus  <- unlist(get.loci(locus.top, qry, window=window, chr.col=col.q[3], ps.col=col.q[2], p.col=col.q[4]))
+            cat("[INFO]\tNumber of SNPs in locus:", length(locus),"\n")
 
             if (sum(is.na(locus)) > 0) {
                 cat("[WARN]\tTop SNP not present in file. File might be incomplete.", mcQTL)
@@ -162,9 +158,9 @@ for (mcQTL in names(results)) {
                     if (!is.na(ref.files[ref.file])) {
                         # Read the file as zipped or not
                         if (opt$zipped){
-                            ref       <- fread(paste0("zcat < ", ref.file), data.table=F, header=T,stringsAsFactors=F, verbose=F, showProgress=F)
+                            ref       <- fread(paste0("zcat < ", ref.files[ref.file]), data.table=F, header=T,stringsAsFactors=F, verbose=F, showProgress=F)
                         } else {
-                            ref       <- fread(ref.file, data.table=F, header=T, stringsAsFactors=F, verbose=F, showProgress=F)
+                            ref       <- fread(ref.files[ref.file], data.table=F, header=T, stringsAsFactors=F, verbose=F, showProgress=F)
                         }
                         ref           <- ref[!duplicated(ref[,col.r[1]]), ]
                         rownames(ref) <- ref[,col.r[1]]
