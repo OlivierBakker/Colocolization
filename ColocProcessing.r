@@ -94,7 +94,12 @@ for (mcQTL in names(results)) {
         rownames(qry) <- qry[,col.q[1]]
         
         for (locus.top in names(results[[mcQTL]])) {
+            
+            cat("[DEBUG]\tDetermining loci with coloc for:", mcQTL,"\n")
+
             locus         <- unlist(get.loci(locus.top, qry, window=window, chr.col=col.q[3], ps.col=col.q[2], p.col=col.q[4]))
+            cat("[DEBUG]\tNumber of SNPs in locus:", length(locus),"\n")
+
             if (sum(is.na(locus)) > 0) {
                 cat("[WARN]\tTop SNP not present in file. File might be incomplete.", mcQTL)
                 next
