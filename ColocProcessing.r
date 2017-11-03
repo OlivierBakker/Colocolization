@@ -96,7 +96,11 @@ for (mcQTL in names(results)) {
         for (locus.top in names(results[[mcQTL]])) {
             
             cat("[DEBUG]\tDetermining loci with coloc for:", mcQTL,"\n")
-
+            cat("[DEBUG]\tTop SNP:", locus.top,"\n")
+            cat("[DEBUG]\tQuery colnames:", colnames(qry),"\n")
+            cat("\n------------------------------------------")
+            head(qry)
+            cat("\n------------------------------------------")
             locus         <- unlist(get.loci(locus.top, qry, window=window, chr.col=col.q[3], ps.col=col.q[2], p.col=col.q[4]))
             cat("[DEBUG]\tNumber of SNPs in locus:", length(locus),"\n")
 
