@@ -3,6 +3,7 @@
 #TODO: Figure out the bug where there is an association but no intersection between SNPs
 library(data.table)
 library(optparse)
+library(RColorBrewer)
 
 option_list = list(
     make_option(c("-i", "--input"), type="character",
@@ -17,6 +18,10 @@ option_list = list(
                 help="The window size used to extend the loci arround significant SNPs.\n\t\t[default=%default]"),
     make_option(c("-t", "--threshold"), type="numeric", default=0.5,
                 help="The threshold for significant colocolization of ppH3 + ppH4.\n\t\t[default=%default]"),
+    make_option(c("-s", "--suggestive"), type="numeric", default=5e-5,
+                help="Threshold for suggestive line.\n\t\t[default=%default]"),
+    make_option(c("-g", "--genomewide"), type="numeric", default=5e-8,
+                help="Threshold for genome wide line.\n\t\t[default=%default]"),
     make_option(c("-n", "--colnamesquery"), type="character", default="rs,ps,chr,p_wald",
                 help="Collumn names of: <snp id>,<posisiton>,<chromosome>,<pvalue> in query\n\t\t[default=%default]"),
     make_option(c("-p", "--colnamesreference"), type="character", default="rs,P",
@@ -111,12 +116,23 @@ for (mcQTL in names(results)) {
             
             if (length(refs) > 0) {
                 cat("[INFO]\tSignificant assoc using threshold: ", threshold, " in locus: ", locus.top, "\n")
-                # Make the plots
+                
+                # Make the plots and define layout
                 pdf(width=5, height=1.5*length(refs)+1.5, file=paste0(out.dir,"/coloc_plots/", locus.top, "_", mcQTL ,".pdf"))
                 par(mar=c(1,4,4.5,2))
                 layout(matrix(1:(length(refs)+1),nrow=length(refs)+1),
                        heights=c(1.5, rep(1, length(refs)-1), 1.5))
                 par(cex=0.75)
+                
+                # Define the color pallete for the plots
+                pallete <- colorRampPalette(brewer.pal(8, "Pastel2"))(length(refs)+1)
+                
+                # Colour the non-significants with an alpha
+                cols            <- qry[locus, col.q[4]] < opt$genomewide
+                cols[cols]      <- pallete[1]
+                cols[cols == F] <- adjustcolor(pallete[1], alpha.f=0.5)
+                
+                # Make the plot for the query summary stats
                 plot(-log10(qry[locus, col.q[4]]) ~ qry[locus, col.q[2]],
                      pch=20,
                      main=gsub('(.{1,80})', '\\1\n', mcQTL),
@@ -127,7 +143,12 @@ for (mcQTL in names(results)) {
                      xaxt="n",
                      ylim=c(min(-log10(qry[locus, col.q[4]])), max(-log10(qry[locus, col.q[4]]))+2),
                      xlim=c(min(qry[locus, col.q[2]]), max(qry[locus, col.q[2]])),
-                     col="#555555")
+                     col=cols)
+                
+                # Add suggestive and genome wide lines
+                abline(-log10(opt$suggestive), 0, col="blue")
+                abline(-log10(opt$genomewide), 0, col="red")
+
                 i.ref <- 1
                 for (ref.file in refs) {
                     if (!is.na(ref.files[ref.file])) {
@@ -139,7 +160,14 @@ for (mcQTL in names(results)) {
                         if (length(i) == 0){
                           cat("[WARN]\tSkipping because no overlap between RS numbers\n")
                           next
-                        } else if (i.ref == length(refs)) {
+                        }
+                        
+                        # Colour the non-significants with an alpha
+                        cols            <- ref[i, col.r[2]] < opt$genomewide
+                        cols[cols]      <- pallete[i.ref+1]
+                        cols[cols == F] <- adjustcolor(pallete[i.ref+1], alpha.f=0.5)
+                        
+                        if (i.ref == length(refs)) {
                             par(mar=c(4.5,4,0,2))
                             plot(-log10(ref[i, col.r[2]]) ~ qry[i, col.q[2]],
                                  pch=20,
@@ -149,7 +177,7 @@ for (mcQTL in names(results)) {
                                  xlab=paste0("Position on ", qry[locus.top, col.q[3]]),
                                  cex=0.75,
                                  main="",
-                                 col="#555555")
+                                 col=cols)
                         } else {
                             par(mar=c(1,4,0,2))
                             plot(-log10(ref[i, col.r[2]]) ~ qry[i, col.q[2]],
@@ -161,10 +189,15 @@ for (mcQTL in names(results)) {
                                  xlab="",
                                  cex=0.75,
                                  main="",
-                                 col="#555555")  
+                                 col=cols)  
                         }
+                        
+                        # Add suggestive and genome wide lines
+                        abline(-log10(opt$suggestive), 0, col="blue")
+                        abline(-log10(opt$genomewide), 0, col="red")
+                        
                         i.ref <- i.ref + 1
- 
+                        # Add text annotation with coloc value
                         text(paste0(strtrim(ref.file, 25), "\nPP.H3 + PP.H4: ", round(assoc[ref.file, 5] + assoc[ref.file, 6], 2)),
                              cex=0.6,
                              y=max(-log10(ref[i, col.r[2]])),
