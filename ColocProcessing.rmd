@@ -27,7 +27,9 @@ option_list = list(
     make_option(c("-p", "--colnamesreference"), type="character", default="rs,P",
                 help="Collumn names of: <snp id>,<pvalue> in reference\n\t\t[default=%default]"),
     make_option(c("-f", "--fread"), action="store_true", default=FALSE,
-                help="Use fread instead of read table to read the reference files.\n\t\t[default=%default]")
+                help="Use fread instead of read table to read the reference files.\n\t\t[default=%default]"),
+    make_option(c("-z", "--zipped"), action="store_true", default=FALSE,
+                help="Use are the refenence files zipped.\n\t\t[default=%default]")
 )
 
 opt_parser    <- OptionParser(option_list=option_list, description="\nScript for running the post proccessing of the coloc results. Generates a stacked manhattan plot for all loci of interest. ")
@@ -152,7 +154,12 @@ for (mcQTL in names(results)) {
                 i.ref <- 1
                 for (ref.file in refs) {
                     if (!is.na(ref.files[ref.file])) {
-                        ref           <- fread(ref.files[ref.file], data.table=F, showProgress=F)
+                        # Read the file as zipped or not
+                        if (opt$zipped){
+                            ref       <- fread(paste0("zcat < ", ref.file), data.table=F, header=T,stringsAsFactors=F, verbose=F, showProgress=F)
+                        } else {
+                            ref       <- fread(ref.file, data.table=F, header=T, stringsAsFactors=F, verbose=F, showProgress=F)
+                        }
                         ref           <- ref[!duplicated(ref[,col.r[1]]), ]
                         rownames(ref) <- ref[,col.r[1]]
                         i             <- intersect(rownames(ref), locus)
@@ -161,7 +168,9 @@ for (mcQTL in names(results)) {
                           cat("[WARN]\tSkipping because no overlap between RS numbers\n")
                           next
                         }
-                        
+                        cat("[DEBUG]\tProcessing file:", basename(ref.file),"\n")
+                        cat("[DEBUG]\t", colnames(ref), "\n")
+
                         # Colour the non-significants with an alpha
                         cols            <- ref[i, col.r[2]] < opt$genomewide
                         cols[cols]      <- pallete[i.ref+1]

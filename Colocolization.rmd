@@ -26,7 +26,9 @@ option_list = list(
     make_option(c("-p", "--colnamesreference"), type="character", default="rs,P",
                 help="Collumn names of: <snp id>,<pvalue> in reference\n\t\t[default=%default]"),
     make_option(c("-f", "--fread"), action="store_true", default=FALSE,
-                help="Use fread instead of read table to read the reference files.\n\t\t[default=%default]")
+                help="Use fread instead of read table to read the reference files.\n\t\t[default=%default]"),
+    make_option(c("-z", "--zipped"), action="store_true", default=FALSE,
+                help="Use are the refenence files zipped.\n\t\t[default=%default]")
     
 )
 
@@ -172,10 +174,13 @@ coloc.wrapper <- function(query, reference, maf, n.q, n.r, type.q="quant", type.
 ### Execution of analysis
 ```{r}
 results   <- list()
+cat("[INFO]\tCalculating coloc for: ", length(qry.files), " query files\n")
+cat("[INFO]\tCalculating coloc for: ", length(ref.files), " reference files\n")
 
 # For code readabillity this is done using for loops since it is not time critical
 for (qry.file in qry.files) {
-    cat("[INFO]\tCalculating coloc for query: ", qry.file, "\n")
+    
+    cat("[INFO]\tCalculating coloc for query: ", basename(qry.file), "\n")
     # Load & clean the query data
     query           <- fread(qry.file, data.table=F, showProgress=F)
     rownames(query) <- query[,col.q[1]]
@@ -198,7 +203,13 @@ for (qry.file in qry.files) {
         for (ref.file in ref.files) {
             # Use either fread or read table to read the files. Read table can read .gz
             if (opt$fread) {
-                ref       <- fread(ref.file, data.table=F, header=T, stringsAsFactors=F, verbose=F, showProgress=F)
+                # Read the file as zipped or not
+                cat("[INFO]\tReading reference file: ", basename(ref.file), "\n")
+                if (opt$zipped){
+                    ref       <- fread(paste0("zcat < ", ref.file), data.table=F, header=T, stringsAsFactors=F, verbose=F, showProgress=F)
+                } else {
+                    ref       <- fread(ref.file, data.table=F, header=T, stringsAsFactors=F, verbose=F, showProgress=F)
+                }
             } else {
                 ref       <- read.table(ref.file, header=T, stringsAsFactors=F)
                              #colClasses=c(character(), character(), numeric(), numeric()))
@@ -240,7 +251,7 @@ for (qry.file in qry.files) {
         }
         
     } else if (nrow(sig.query) == 0) {
-        cat("[WARN]\tNo significant hits in file: ", qry.file, "\n\tfor threshold: ", threshold, "\n\tSkipping to next file\n")
+        cat("[WARN]\tNo significant hits in file: ", basename(qry.file), "\n\tfor threshold: ", threshold, "\n\tSkipping to next file\n")
         next
     } else {
         cat("[ERROR]\tSomething went wrong. Skipping file\n")
