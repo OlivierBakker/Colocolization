@@ -27,8 +27,9 @@ option_list = list(
     make_option(c("-f", "--fread"), action="store_true", default=FALSE,
                 help="Use fread instead of read table to read the reference files.\n\t\t[default=%default]"),
     make_option(c("-z", "--zipped"), action="store_true", default=FALSE,
-                help="Use are the refenence files zipped.\n\t\t[default=%default]")
-    
+                help="Use are the refenence files zipped.\n\t\t[default=%default]"),
+    make_option(c("-x", "--minsnps"), type="numeric", default=5,
+                help="The minimum amount of SNPs in the query file.\n\t\t[default=%default]")
 )
 
 opt_parser    <- OptionParser(option_list=option_list, description="\nScript for running a approximate bayes coloc analysis using multiple input QTLs and compare them to multiple traits. Auto selects loci to compare to traits based on threshold and window size. Returns an .RData file containing the summary's of the coloc.abf function. Selection of quantative or case control is based upon the file given in the option -s. If case & control are NA a quantative analysis is used and vice versa.")
@@ -184,6 +185,12 @@ for (qry.file in qry.files) {
     sig.query       <- query[query[,col.q[4]] < threshold,]
     query.name      <- tail(strsplit(qry.file, "/")[[1]], n=1)
 
+    # If fewer then N SNPs in query skip 
+    if (nrow(query) <= opt$minsnps) {
+        cat("[WARN] Not enough SNPs in query file, skipping. To overide change --minsps to 0\n") 
+        next
+    }
+    
     if(nrow(sig.query) > 0) {
         # Select which SNPs are the top in their respective region
         if (nrow(sig.query) == 1) {
@@ -240,7 +247,7 @@ for (qry.file in qry.files) {
                   cat("[WARN] No overlapping snps for query: ", query.name, " and reference: ", ref.name, "\n") 
                    t        <- as.numeric(rep(NA, 6))
                    names(t) <- c("nsnps", "PP.H0.abf","PP.H1.abf","PP.H2.abf","PP.H3.abf","PP.H4.abf")
-                  results[[query.name]][[name]][[ref.name]] <- t
+                   results[[query.name]][[name]][[ref.name]] <- t
                }
             }
         }
