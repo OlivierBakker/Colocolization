@@ -36,7 +36,7 @@ opt           <- parse_args(opt_parser)
 
 tryCatch({
     maf.path      <- opt$maf
-    maf           <- fread(maf.path, select=c("SNP", "MAF"), data.table=F, showProgress=F)
+    maf           <- fread(maf.path, select=c("SNP", "MAF"), data.table=F, verbose=F, showProgress=F)
     rownames(maf) <- maf$SNP
     maf           <- maf[, 2,drop=F]
 
@@ -178,7 +178,7 @@ for (qry.file in qry.files) {
     
     cat("[INFO]\tCalculating coloc for query: ", basename(qry.file), "\n")
     # Load & clean the query data
-    query           <- fread(qry.file, data.table=F, showProgress=F)
+    query           <- fread(qry.file, data.table=F, verbose=F, showProgress=F)
     rownames(query) <- query[,col.q[1]]
     query           <- query[,-which(colnames(query) == col.q[1])]
     query$chr       <- as.numeric(gsub("chr", "", query[,col.q[3]]))
