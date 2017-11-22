@@ -1,5 +1,4 @@
 ## ------------------------------------------------------------------------
-ls
 library(data.table)
 library(optparse)
 
@@ -43,7 +42,8 @@ tryCatch({
 
     ref.path      <- opt$samplesizeref
     ref.info      <- read.table(ref.path, header=T, stringsAsFactors=F, sep=";", row.names=1)
-
+    rownames(ref.info) <- tolower(rownames(ref.info))
+    
     qry.pathfile  <- opt$query
     qry.files     <- read.table(qry.pathfile, stringsAsFactors=F, header=F, sep=";")[,1]
 
@@ -219,10 +219,10 @@ for (qry.file in qry.files) {
             ref           <- ref[!duplicated(ref[,col.r[1]]),]
             rownames(ref) <- ref[,col.r[1]]
             ref.name      <- tail(strsplit(ref.file, "/")[[1]], n=1)
-            n.r           <- ref.info[ref.name, 1]
+            n.r           <- ref.info[tolower(ref.name), 1]
             type.r        <- "quant"
             if (is.na(n.r)) {
-                n.r       <- as.numeric(ref.info[ref.name, 2:3])
+                n.r       <- as.numeric(ref.info[tolower(ref.name), 2:3])
                 type.r    <- "cc"
                 # If not quant or cc skip the file 
                 if (sum(is.na(n.r)) > 0) {

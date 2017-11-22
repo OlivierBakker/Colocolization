@@ -129,12 +129,12 @@ for (mcQTL in names(results)) {
                 par(cex=0.75)
                 
                 # Define the color pallete for the plots
-                pallete <- colorRampPalette(brewer.pal(8, "Pastel2"))(length(refs)+1)
+                pallete <- colorRampPalette(brewer.pal(8, "Dark2"))(length(refs)+1)
                 
                 # Colour the non-significants with an alpha
                 cols            <- qry[locus, col.q[4]] < opt$genomewide
                 cols[cols]      <- pallete[1]
-                cols[cols == F] <- adjustcolor(pallete[1], alpha.f=0.5)
+                cols[cols == F] <- adjustcolor(pallete[1], alpha.f=0.75)
                 
                 # Make the plot for the query summary stats
                 plot(-log10(qry[locus, col.q[4]]) ~ qry[locus, col.q[2]],
@@ -145,7 +145,7 @@ for (mcQTL in names(results)) {
                      cex=0.75,
                      cex.main=0.75,
                      xaxt="n",
-                     ylim=c(min(-log10(qry[locus, col.q[4]])), max(-log10(qry[locus, col.q[4]]))+2),
+                     ylim=c(0, max(-log10(qry[locus, col.q[4]]))+2),
                      xlim=c(min(qry[locus, col.q[2]]), max(qry[locus, col.q[2]])),
                      col=cols)
                 
@@ -182,7 +182,7 @@ for (mcQTL in names(results)) {
                             par(mar=c(4.5,4,0,2))
                             plot(-log10(ref[i, col.r[2]]) ~ qry[i, col.q[2]],
                                  pch=20,
-                                 ylim=c(min(-log10(qry[locus, col.q[4]])), max(-log10(ref[i, col.r[2]]))+2),
+                                 ylim=c(0, max(-log10(ref[i, col.r[2]]))+2),
                                  xlim=c(min(qry[locus, col.q[2]]), max(qry[locus, col.q[2]])),
                                  ylab="-log10(p-value)",
                                  xlab=paste0("Position on ", qry[locus.top, col.q[3]]),
@@ -193,7 +193,7 @@ for (mcQTL in names(results)) {
                             par(mar=c(1,4,0,2))
                             plot(-log10(ref[i, col.r[2]]) ~ qry[i, col.q[2]],
                                  pch=20,
-                                 ylim=c(min(-log10(qry[locus, col.q[4]])), max(-log10(ref[i, col.r[2]]))+2),
+                                 ylim=c(0, max(-log10(ref[i, col.r[2]]))+2),
                                  xlim=c(min(qry[locus, col.q[2]]), max(qry[locus, col.q[2]])),
                                  ylab="-log10(p-value)",
                                  xaxt='n',
